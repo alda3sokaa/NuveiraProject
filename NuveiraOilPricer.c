@@ -13,7 +13,8 @@ const float PLASTIC_BAG_COST = 1.5f;
 const float ETHANOL_100ML_COST = 40.0f;
 const float ETHANOL_50ML_COST = 20.0f;
 const float ETHANOL_10ML_COST = 4.0f;
-const float EHTANOL_SMALL_COST = 1.0f;
+const float ETHANOL_5ML_COST = 1.5f;
+const float ETHANOL_3ML_COST = 1.0f;
 
 const float BOTTLE_COST_100ML = 100.0f;
 const float BOTTLE_COST_50ML = 36.0f;
@@ -80,7 +81,7 @@ int main(void)
     Oil oils[MAX_OILS];
     int NumberOfOils = 0;
     USD_TO_TL = FetchUsdToTlRate(USD_TO_TL); // API used to fetch USD/TL exchange rate whenever the program runs.
-    if (USD_TO_TL == 43.8f) {
+    if (USD_TO_TL == 43.9f) {
     printf("Warning: using fallback USD/TL\n");
 }
     printf("Live USD/TL: %.4f\n", USD_TO_TL);
@@ -265,7 +266,7 @@ float Calculate5MLPrice(Oil *o)
     float OilAmountPriceInTL;
     OilAmountPriceInTL = OIL_IN_5ML * (o->oil_price_per_gram_tl);
 
-    RetailPriceInTL = (OilAmountPriceInTL + BOTTLE_COST_SMALL + (EHTANOL_SMALL_COST + 0.5) +
+    RetailPriceInTL = (OilAmountPriceInTL + BOTTLE_COST_SMALL + ETHANOL_5ML_COST +
                         + STICKER_COST_SMALL + PLASTIC_BAG_COST + THANK_YOU_CARD
                         + LABOR_COST + DEVELOPMENT_COST_SMALL) * MARKETING_PERCENTAGE
                         * FAULT_PERCENTAGE * PROFIT_PERCENTAGE_SMALL;
@@ -278,7 +279,7 @@ float Calculate3MLPrice(Oil *o)
     float OilAmountPriceInTL;
     OilAmountPriceInTL = OIL_IN_3ML * (o->oil_price_per_gram_tl);
 
-    RetailPriceInTL = (OilAmountPriceInTL + BOTTLE_COST_SMALL + EHTANOL_SMALL_COST +
+    RetailPriceInTL = (OilAmountPriceInTL + BOTTLE_COST_SMALL + ETHANOL_3ML_COST +
                         + STICKER_COST_SMALL + PLASTIC_BAG_COST + THANK_YOU_CARD
                         + LABOR_COST + DEVELOPMENT_COST_SMALL) * MARKETING_PERCENTAGE
                         * FAULT_PERCENTAGE * PROFIT_PERCENTAGE_SMALL;
