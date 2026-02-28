@@ -178,6 +178,8 @@ int main(void)
     printf("%s -> %.2f TL (Rounded -> %.2f TL)\n", oils[i].oil_name, retail, rounded);
 }
 
+    system("pause");
+
     return 0;
 }
 
