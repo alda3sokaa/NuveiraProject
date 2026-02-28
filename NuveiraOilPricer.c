@@ -13,17 +13,28 @@
 float USD_TO_TL = 43.8f;
 const float SUEDE_BAG_COST = 26.5f;
 const float CARTON_BAG_COST = 11.3f;
-const float ETHANOL_50ML_COST = 20.0f;
+const float PLASTIC_BAG_COST = 1.5f;
 const float ETHANOL_100ML_COST = 40.0f;
-const float BOTTLE_COST = 36.0f;
+const float ETHANOL_50ML_COST = 20.0f;
+const float ETHANOL_10ML_COST = 4.0f;
+const float BOTTLE_COST_100ML = 100.0f;
+const float BOTTLE_COST_50ML = 36.0f;
+const float BOTTLE_COST_10ML = 8.5f;
+const float BOTTLE_COST_3ML = 7.0f;
 const float STICKER_COST = 4.0f;
+const float STICKER_COST_10ML = 1.0f;
 const float LABOR_COST = 35.0f;
 const float DEVELOPMENT_COST = 15.0f;
+const float DEVELOPMENT_COST_10ML = 6.0f;
 const float SAMPLE_COST = 5.0f;
-const float OIL_IN_PERFUME = 18.0f;
+const float OIL_IN_100ML = 35.0f;
+const float OIL_IN_50ML = 18.0f;
+const float OIL_IN_10ML = 3.0f;
+const float OIL_IN_5ML = 1.8f;
 const float MARKETING_PERCENTAGE = 1.1f;
 const float FAULT_PERCENTAGE = 1.03f;
-const float PROFIT_PERCENTAGE = 2.2;
+const float PROFIT_PERCENTAGE = 2.2f;
+const float PROFIT_PERCENTAGE_10ML = 2.35f;
 const float THANK_YOU_CARD = 4.0f;
 const float WOMENS_CARD = 3.0f;
 const float RAMADAN_CARD = 5.0f;
@@ -48,7 +59,10 @@ typedef struct Oils {
 } Oil;
 
 float PriceInUSD(Oil *o);
-float CalculatePerfumePrice(Oil *o);
+float Calculate5MLPrice(Oil *o);
+float Calculate10MLPrice(Oil *o);
+float Calculate50MLPrice(Oil *o);
+float Calculate100MLPrice(Oil *o);
 float RoundToNearest50(float price);
 float FetchUsdToTlRate(float fallback);
 void clearLine(void);
@@ -151,7 +165,7 @@ int main(void)
     printf("RETAIL PRICES\n");
     printf("========================\n");
     for (int i = 0; i < NumberOfOils; i++) {
-    float retail = CalculatePerfumePrice(&oils[i]);
+    float retail = Calculate50MLPrice(&oils[i]);
     float rounded = RoundToNearest50(retail);
     printf("%s -> %.2f TL (Rounded -> %.2f TL)\n", oils[i].oil_name, retail, rounded);
 }
@@ -186,14 +200,14 @@ float PriceInUSD(Oil *o)
 
     return o->order_price_usd;
 }
-float CalculatePerfumePrice(Oil *o)
+float Calculate100MLPrice(Oil *o)
 {
     float RetailPriceInTL;
     float OilAmountPriceInTL;
-    OilAmountPriceInTL = OIL_IN_PERFUME * (o->oil_price_per_gram_tl);
+    OilAmountPriceInTL = OIL_IN_100ML * (o->oil_price_per_gram_tl);
 
     RetailPriceInTL = (OilAmountPriceInTL + CARTON_BAG_COST + SUEDE_BAG_COST +
-                ETHANOL_50ML_COST + BOTTLE_COST + 
+                ETHANOL_100ML_COST + BOTTLE_COST_100ML + 
                 STICKER_COST + LABOR_COST + DEVELOPMENT_COST + 
                 SAMPLE_COST + RAMADAN_CARD + 
                 THANK_YOU_CARD) * MARKETING_PERCENTAGE
@@ -202,6 +216,36 @@ float CalculatePerfumePrice(Oil *o)
     
     return RetailPriceInTL;
     
+}
+float Calculate50MLPrice(Oil *o)
+{
+    float RetailPriceInTL;
+    float OilAmountPriceInTL;
+    OilAmountPriceInTL = OIL_IN_50ML * (o->oil_price_per_gram_tl);
+
+    RetailPriceInTL = (OilAmountPriceInTL + CARTON_BAG_COST + SUEDE_BAG_COST +
+                ETHANOL_50ML_COST + BOTTLE_COST_50ML + 
+                STICKER_COST + LABOR_COST + DEVELOPMENT_COST + 
+                SAMPLE_COST + RAMADAN_CARD + 
+                THANK_YOU_CARD) * MARKETING_PERCENTAGE
+                * FAULT_PERCENTAGE * PROFIT_PERCENTAGE;
+                
+    
+    return RetailPriceInTL;
+    
+}
+float Calculate10MLPrice(Oil *o)
+{
+    float RetailPriceInTL;
+    float OilAmountPriceInTL;
+    OilAmountPriceInTL = OIL_IN_10ML * (o->oil_price_per_gram_tl);
+
+    RetailPriceInTL = (OilAmountPriceInTL + BOTTLE_COST_10ML + ETHANOL_10ML_COST
+                        + PLASTIC_BAG_COST + THANK_YOU_CARD + STICKER_COST_10ML + LABOR_COST
+                        + DEVELOPMENT_COST_10ML) * MARKETING_PERCENTAGE  
+                        * FAULT_PERCENTAGE * PROFIT_PERCENTAGE_10ML;
+
+    return RetailPriceInTL;
 }
 float RoundToNearest50(float price)
 {
