@@ -178,7 +178,9 @@ int main(void)
     printf("%s -> %.2f TL (Rounded -> %.2f TL)\n", oils[i].oil_name, retail, rounded);
 }
 
-    system("pause");
+    printf("\nPress Enter to exit...");
+    getchar();
+    getchar();
 
     return 0;
 }
