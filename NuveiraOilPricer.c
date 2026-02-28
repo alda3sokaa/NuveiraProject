@@ -4,40 +4,47 @@
 #include <stdlib.h>
 #define MAX_OILS 100
 
-
-
-// TODO: Add an API for the USD_TO_TL variable  
-// so that you don't have to keep changing it.
-
 // Global constants
-float USD_TO_TL = 43.8f;
+float USD_TO_TL = 43.9f;
 const float SUEDE_BAG_COST = 26.5f;
 const float CARTON_BAG_COST = 11.3f;
 const float PLASTIC_BAG_COST = 1.5f;
+
 const float ETHANOL_100ML_COST = 40.0f;
 const float ETHANOL_50ML_COST = 20.0f;
 const float ETHANOL_10ML_COST = 4.0f;
+const float EHTANOL_SMALL_COST = 1.0f;
+
 const float BOTTLE_COST_100ML = 100.0f;
 const float BOTTLE_COST_50ML = 36.0f;
 const float BOTTLE_COST_10ML = 8.5f;
-const float BOTTLE_COST_3ML = 7.0f;
+const float BOTTLE_COST_SMALL = 7.0f;
+
 const float STICKER_COST = 4.0f;
-const float STICKER_COST_10ML = 1.0f;
+const float STICKER_COST_SMALL = 1.0f;
+
 const float LABOR_COST = 35.0f;
 const float DEVELOPMENT_COST = 15.0f;
-const float DEVELOPMENT_COST_10ML = 6.0f;
+const float DEVELOPMENT_COST_SMALL = 6.0f;
+
 const float SAMPLE_COST = 5.0f;
+
 const float OIL_IN_100ML = 35.0f;
 const float OIL_IN_50ML = 18.0f;
 const float OIL_IN_10ML = 3.0f;
 const float OIL_IN_5ML = 1.8f;
+const float OIL_IN_3ML = 1.0f;
+
 const float MARKETING_PERCENTAGE = 1.1f;
 const float FAULT_PERCENTAGE = 1.03f;
 const float PROFIT_PERCENTAGE = 2.2f;
 const float PROFIT_PERCENTAGE_10ML = 2.35f;
+const float PROFIT_PERCENTAGE_SMALL = 2.0f;
+
 const float THANK_YOU_CARD = 4.0f;
 const float WOMENS_CARD = 3.0f;
 const float RAMADAN_CARD = 5.0f;
+
 const float SMALL_BATCH_TAX = 20.0f;
 const float MEDIUM_BATCH_TAX = 10.0f;
 const float LARGE_BATCH_TAX = 5.0f;
@@ -59,6 +66,7 @@ typedef struct Oils {
 } Oil;
 
 float PriceInUSD(Oil *o);
+float Calculate3MLPrice(Oil *o);
 float Calculate5MLPrice(Oil *o);
 float Calculate10MLPrice(Oil *o);
 float Calculate50MLPrice(Oil *o);
@@ -241,9 +249,35 @@ float Calculate10MLPrice(Oil *o)
     OilAmountPriceInTL = OIL_IN_10ML * (o->oil_price_per_gram_tl);
 
     RetailPriceInTL = (OilAmountPriceInTL + BOTTLE_COST_10ML + ETHANOL_10ML_COST
-                        + PLASTIC_BAG_COST + THANK_YOU_CARD + STICKER_COST_10ML + LABOR_COST
-                        + DEVELOPMENT_COST_10ML) * MARKETING_PERCENTAGE  
+                        + PLASTIC_BAG_COST + THANK_YOU_CARD + STICKER_COST_SMALL + LABOR_COST
+                        + DEVELOPMENT_COST_SMALL) * MARKETING_PERCENTAGE  
                         * FAULT_PERCENTAGE * PROFIT_PERCENTAGE_10ML;
+
+    return RetailPriceInTL;
+}
+float Calculate5MLPrice(Oil *o)
+{
+    float RetailPriceInTL;
+    float OilAmountPriceInTL;
+    OilAmountPriceInTL = OIL_IN_5ML * (o->oil_price_per_gram_tl);
+
+    RetailPriceInTL = (OilAmountPriceInTL + BOTTLE_COST_SMALL + (EHTANOL_SMALL_COST + 0.5) +
+                        + STICKER_COST_SMALL + PLASTIC_BAG_COST + THANK_YOU_CARD
+                        + LABOR_COST + DEVELOPMENT_COST_SMALL) * MARKETING_PERCENTAGE
+                        * FAULT_PERCENTAGE * PROFIT_PERCENTAGE_SMALL;
+
+    return RetailPriceInTL;
+}
+float Calculate3MLPrice(Oil *o)
+{
+    float RetailPriceInTL;
+    float OilAmountPriceInTL;
+    OilAmountPriceInTL = OIL_IN_3ML * (o->oil_price_per_gram_tl);
+
+    RetailPriceInTL = (OilAmountPriceInTL + BOTTLE_COST_SMALL + EHTANOL_SMALL_COST +
+                        + STICKER_COST_SMALL + PLASTIC_BAG_COST + THANK_YOU_CARD
+                        + LABOR_COST + DEVELOPMENT_COST_SMALL) * MARKETING_PERCENTAGE
+                        * FAULT_PERCENTAGE * PROFIT_PERCENTAGE_SMALL;
 
     return RetailPriceInTL;
 }
