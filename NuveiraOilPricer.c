@@ -175,7 +175,7 @@ int main(void)
     printf("========================\n");
     for (int i = 0; i < NumberOfOils; i++) {
     float retail = Calculate50MLPrice(&oils[i]);
-    float rounded = RoundToNearest50(retail);
+    float rounded = RoundToNearest100(retail);
     printf("%s -> %.2f TL (Rounded -> %.2f TL)\n", oils[i].oil_name, retail, rounded);
 }
 
@@ -286,9 +286,9 @@ float Calculate3MLPrice(Oil *o)
 
     return RetailPriceInTL;
 }
-float RoundToNearest50(float price)
+float RoundToNearest100(float price)
 {
-    return roundf(price / 50.0f) * 50.0f;
+    return roundf(price / 100.0f) * 100.0f;
 }
 float FetchUsdToTlRate(float fallback)
 {
