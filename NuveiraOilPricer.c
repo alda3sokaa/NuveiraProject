@@ -72,7 +72,7 @@ float Calculate5MLPrice(Oil *o);
 float Calculate10MLPrice(Oil *o);
 float Calculate50MLPrice(Oil *o);
 float Calculate100MLPrice(Oil *o);
-float RoundToNearest50(float price);
+float RoundToNearest100(float price);
 float FetchUsdToTlRate(float fallback);
 void clearLine(void);
 
