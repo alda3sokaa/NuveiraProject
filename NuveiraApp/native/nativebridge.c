@@ -1,38 +1,84 @@
 #include <jni.h>
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
+#include "com_nuveira_nuveiraapp_NativeBridge.h"
 
-typedef struct {
-    float oil_price_per_kg_usd;
-    float oil_grams;
-    float oil_price_per_gram_tl;
-} Oil;
+// --- Constants from your original code ---
+float USD_TO_TL = 44.10f; // This matches your screenshot rate
 
-static Oil currentOil;
-static const float USD_TO_TL = 44.0f;
-static const float BATCH_TAX_RATE = 0.10f;
+const float SUEDE_BAG_COST = 26.5f;
+const float CARTON_BAG_COST = 11.3f;
+const float ETHANOL_50ML_COST = 20.0f;
+const float BOTTLE_COST_50ML = 36.0f;
+const float STICKER_COST = 4.0f;
+const float LABOR_COST = 35.0f;
+const float DEVELOPMENT_COST = 15.0f;
+const float SAMPLE_COST = 5.0f;
+const float THANK_YOU_CARD = 4.0f;
+const float RAMADAN_CARD = 5.0f;
 
-// 1. Fixed for the button click
+const float OIL_IN_50ML = 16.5f;
+
+const float MARKETING_PERCENTAGE = 1.1f;
+const float FAULT_PERCENTAGE = 1.03f;
+const float PROFIT_PERCENTAGE = 2.2f;
+
+const float SMALL_BATCH_TAX = 20.0f;
+const float MEDIUM_BATCH_TAX = 10.0f;
+const float LARGE_BATCH_TAX = 5.0f;
+
+// Global state to store input from Java
+float globalPricePerKg = 0.0f;
+float globalGrams = 0.0f;
+
 JNIEXPORT void JNICALL Java_com_nuveira_nuveiraapp_NativeBridge_setOilData
   (JNIEnv *env, jobject obj, jfloat pricePerKg, jfloat grams) {
-    currentOil.oil_price_per_kg_usd = (float)pricePerKg;
-    currentOil.oil_grams = (float)grams;
-    currentOil.oil_price_per_gram_tl = ((float)pricePerKg / 1000.0f) * USD_TO_TL;
-    // Note: use printf only for debugging, it shows up in the IntelliJ console
-    printf("[C DEBUG] Set: %.2f USD/kg\n", pricePerKg);
+    globalPricePerKg = pricePerKg;
+    globalGrams = grams;
 }
 
-// 2. Fixed for the display
+JNIEXPORT jfloat JNICALL Java_com_nuveira_nuveiraapp_NativeBridge_getPricePerGramTL
+  (JNIEnv *env, jobject obj) {
+    float pricePerKg = globalPricePerKg;
+
+    if (globalGrams < 100.0f) pricePerKg += SMALL_BATCH_TAX;
+    else if (globalGrams < 250.0f) pricePerKg += MEDIUM_BATCH_TAX;
+    else if (globalGrams < 500.0f) pricePerKg += LARGE_BATCH_TAX;
+
+    float pricePerGramUsd = pricePerKg / 1000.0f;
+    return pricePerGramUsd * USD_TO_TL;
+}
+
 JNIEXPORT jfloat JNICALL Java_com_nuveira_nuveiraapp_NativeBridge_get50MLPrice
   (JNIEnv *env, jobject obj) {
-    float oilAmountPriceInTL = 15.0f * currentOil.oil_price_per_gram_tl;
-    float baseCosts = (oilAmountPriceInTL + 11.3f + 26.5f + 20.0f + 36.0f + 4.0f + 35.0f + 15.0f + 5.0f + 5.0f);
-    float retailPriceInTL = baseCosts * (1.0f + BATCH_TAX_RATE) * 1.03f * 2.2f;
-    return (jfloat)retailPriceInTL;
+    float gramPriceTl = Java_com_nuveira_nuveiraapp_NativeBridge_getPricePerGramTL(env, obj);
+    float oilAmountPriceTl = OIL_IN_50ML * gramPriceTl;
+
+    // The EXACT formula from your Calculate50MLPrice function
+    float retailPriceInTl = (oilAmountPriceTl + CARTON_BAG_COST + SUEDE_BAG_COST +
+                ETHANOL_50ML_COST + BOTTLE_COST_50ML + 
+                STICKER_COST + LABOR_COST + DEVELOPMENT_COST + 
+                SAMPLE_COST + RAMADAN_CARD + 
+                THANK_YOU_CARD) * MARKETING_PERCENTAGE
+                * FAULT_PERCENTAGE * PROFIT_PERCENTAGE;
+    
+    return retailPriceInTl;
 }
 
-// 3. Keep these for stability
-JNIEXPORT jfloat JNICALL Java_com_nuveira_nuveiraapp_NativeBridge_getLiveRateFromC(JNIEnv *env, jobject obj) { return USD_TO_TL; }
-JNIEXPORT jfloat JNICALL Java_com_nuveira_nuveiraapp_NativeBridge_getUsdRate(JNIEnv *env, jobject obj) { return USD_TO_TL; }
-JNIEXPORT jfloat JNICALL Java_com_nuveira_nuveiraapp_NativeBridge_getPricePerGramTL(JNIEnv *env, jobject obj) { return currentOil.oil_price_per_gram_tl; }
-JNIEXPORT jfloat JNICALL Java_com_nuveira_nuveiraapp_NativeBridge_roundToNearest100(JNIEnv *env, jobject obj, jfloat value) { return floorf(value / 100.0f) * 100.0f; }
+JNIEXPORT jfloat JNICALL Java_com_nuveira_nuveiraapp_NativeBridge_roundToNearest100
+  (JNIEnv *env, jobject obj, jfloat price) {
+    // Your original code used roundf (nearest), not ceilf (up)
+    // 510.0 -> 500.0 | 551.0 -> 600.0
+    return roundf(price / 100.0f) * 100.0f;
+}
+
+JNIEXPORT jfloat JNICALL Java_com_nuveira_nuveiraapp_NativeBridge_getLiveRateFromC
+  (JNIEnv *env, jobject obj) {
+    return USD_TO_TL;
+}
+
+JNIEXPORT jfloat JNICALL Java_com_nuveira_nuveiraapp_NativeBridge_getUsdRate
+  (JNIEnv *env, jobject obj) {
+    return USD_TO_TL;
+}
