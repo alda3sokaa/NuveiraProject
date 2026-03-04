@@ -81,35 +81,59 @@ public class HelloController {
         updateLiveRate();
     }
 
+    /**
+     * METHOD NOTE:
+     * This is a simulated live rate for demonstration purposes.
+     * Currently, it's not connected to a real bank or stock exchange API.
+     * Purpose: To show how the UI and calculations dynamically update.
+     * Future Task: Integrate a real-time Currency API.
+     */
     private void updateLiveRate() {
         // Start from 44.00 as per management feedback
         currentExchangeRate = 44.00 + (Math.random() * 0.5);
         lblLiveRate.setText(String.format("Live USD/TL : %.2f", currentExchangeRate));
+
+        // Console log for debugging
+        System.out.println("Rate updated (Simulation): " + currentExchangeRate);
     }
 
     @FXML
     protected void onCalculateButtonClick() {
         try {
+            // 1. Read input values from TextFields
             String name = txtName.getText();
-            double price = Double.parseDouble(txtPrice.getText());
-            double amount = Double.parseDouble(txtAmount.getText());
+            double pricePerKiloUSD = Double.parseDouble(txtPrice.getText()); // Oil price per Kilogram in USD
+            double amountInGrams = Double.parseDouble(txtAmount.getText()); // Required amount in Grams
 
-            // Dynamic Calculation based on the Live Rate
-            double pricePerGram = (price * currentExchangeRate) / 100;
-            double roundedTotal = Math.round((price * amount) * currentExchangeRate);
+            // 2. Dynamic calculations based on current exchange rate (starting from 44.00)
+            // Calculate the price of a single gram in Turkish Lira (TL)
+            double pricePerGramTL = (pricePerKiloUSD * currentExchangeRate) / 1000;
 
-            resultsList.add(new OilResult(name,
-                    String.format("%.2f TL/g", pricePerGram),
-                    String.format("%.2f TL", roundedTotal)));
-            // Clear Fields
+            // Calculate total amount in TL (Price per gram * requested amount)
+            double totalTL = pricePerGramTL * amountInGrams;
+            double roundedTotalTL = Math.round(totalTL); // Round to the nearest whole number for retail
+
+            // في غلط فالحسابات
+            // لازم نرجع نشوف طريقة الحسابات
+
+            // 3. Add the result to the TableView (Single entry)
+            resultsList.add(new OilResult(
+                    name,
+                    String.format("%.2f TL/g", pricePerGramTL),
+                    String.format("%.0f TL", roundedTotalTL)
+            ));
+
+            // 4. Clear input fields for next entry
             txtName.clear();
             txtPrice.clear();
             txtAmount.clear();
 
         } catch (NumberFormatException e) {
+            // Show error alert if user inputs are not valid numbers
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setContentText("Please enter valid numbers.");
+            alert.setTitle("Input Error");
+            alert.setHeaderText(null);
+            alert.setContentText("Please enter valid numbers for price and amount.");
             alert.showAndWait();
         }
     }

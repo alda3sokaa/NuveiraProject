@@ -30,8 +30,8 @@ const float DEVELOPMENT_COST_SMALL = 6.0f;
 
 const float SAMPLE_COST = 5.0f;
 
-const float OIL_IN_100ML = 35.0f;
-const float OIL_IN_50ML = 18.0f;
+const float OIL_IN_100ML = 30.0f;
+const float OIL_IN_50ML = 15.0f;
 const float OIL_IN_10ML = 3.0f;
 const float OIL_IN_5ML = 1.8f;
 const float OIL_IN_3ML = 1.0f;
@@ -72,7 +72,7 @@ float Calculate5MLPrice(Oil *o);
 float Calculate10MLPrice(Oil *o);
 float Calculate50MLPrice(Oil *o);
 float Calculate100MLPrice(Oil *o);
-float RoundToNearest50(float price);
+float RoundToNearest100(float price);
 float FetchUsdToTlRate(float fallback);
 void clearLine(void);
 
@@ -175,7 +175,7 @@ int main(void)
     printf("========================\n");
     for (int i = 0; i < NumberOfOils; i++) {
     float retail = Calculate50MLPrice(&oils[i]);
-    float rounded = RoundToNearest50(retail);
+    float rounded = RoundToNearest100(retail);
     printf("%s -> %.2f TL (Rounded -> %.2f TL)\n", oils[i].oil_name, retail, rounded);
 }
 
@@ -286,9 +286,9 @@ float Calculate3MLPrice(Oil *o)
 
     return RetailPriceInTL;
 }
-float RoundToNearest50(float price)
+float RoundToNearest100(float price)
 {
-    return roundf(price / 50.0f) * 50.0f;
+    return roundf(price / 100.0f) * 100.0f;
 }
 float FetchUsdToTlRate(float fallback)
 {
