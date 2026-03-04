@@ -3,14 +3,13 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.control.cell.*?>
 
-<VBox alignment="TOP_CENTER" spacing="15.0" style="-fx-background-color: #e0e0e0;" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/17.0.12" fx:controller="com.nuveira.nuveiraapp.HelloController">
+<VBox alignment="TOP_CENTER" spacing="15.0" style="-fx-background-color: #1e1e1e;" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/17.0.12" fx:controller="com.nuveira.nuveiraapp.HelloController">
     <padding>
         <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
     </padding>
 
-    <GridPane alignment="CENTER" hgap="10" vgap="5" style="-fx-background-color: #c0c0c0; -fx-background-radius: 5;">
+    <GridPane alignment="CENTER" hgap="10" vgap="5" style="-fx-background-color: #2b2b2b; -fx-background-radius: 5;">
         <padding>
             <Insets bottom="10" left="10" right="10" top="10" />
         </padding>
@@ -24,22 +23,23 @@
             <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
         </rowConstraints>
         <children>
-            <Label text="Oil Name" style="-fx-font-weight: bold;" />
+            <Label text="Oil Name" style="-fx-font-weight: bold; -fx-text-fill: white;" />
             <TextField fx:id="txtName" promptText="Enter name" GridPane.rowIndex="1" />
 
-            <Label text="Oil Price (USD)" GridPane.columnIndex="1" style="-fx-font-weight: bold;" />
+            <Label text="Oil Price (USD)" GridPane.columnIndex="1" style="-fx-font-weight: bold; -fx-text-fill: white;" />
             <TextField fx:id="txtPrice" promptText="0.00" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-            <Label text="Oil Amount" GridPane.columnIndex="2" style="-fx-font-weight: bold;" />
+            <Label text="Oil Amount" GridPane.columnIndex="2" style="-fx-font-weight: bold; -fx-text-fill: white;" />
             <TextField fx:id="txtAmount" promptText="0" GridPane.columnIndex="2" GridPane.rowIndex="1" />
         </children>
     </GridPane>
 
     <HBox alignment="CENTER_RIGHT">
-        <Button mnemonicParsing="false" onAction="#onCalculateButtonClick" style="-fx-background-color: black; -fx-text-fill: white; -fx-font-weight: bold;" text="Calculate" />
+        <Button mnemonicParsing="false" onAction="#onCalculateButtonClick" style="-fx-background-color:#404040; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" text="Calculate" />
     </HBox>
 
-    <TableView fx:id="resultTable" prefHeight="200.0" prefWidth="450.0" VBox.vgrow="ALWAYS">
+    <TableView fx:id="resultTable" prefHeight="200.0" prefWidth="450.0" VBox.vgrow="ALWAYS"
+               style="-fx-background-color: #2b2b2b; -fx-control-inner-background: #2b2b2b; -fx-text-background-color: bold;">
         <columns>
             <TableColumn fx:id="colPerfumeName" prefWidth="150.0" text="Perfume Name" />
             <TableColumn fx:id="colPriceGram" prefWidth="150.0" text="Price of Gram (TL)" />
@@ -50,5 +50,5 @@
         </columnResizePolicy>
     </TableView>
 
-    <Label fx:id="lblLiveRate" text="Live USD/TL : ..." style="-fx-font-size: 11px; -fx-text-fill: #333333;"/>
+    <Label fx:id="lblLiveRate" text="Live USD/TL : ..." style="-fx-font-size: 12px; -fx-text-fill: #00ff00; -fx-font-weight: bold;"/>
 </VBox>

@@ -10,6 +10,8 @@ import javafx.util.Duration;
 
 public class HelloController {
 
+    private double currentExchangeRate = 44.00;
+
     // Bind Input Fields
     @FXML private TextField txtName;
     @FXML private TextField txtPrice;
@@ -29,14 +31,41 @@ public class HelloController {
 
     @FXML
     public void initialize() {
-        // Bind Columns
+        // 1. Bind columns to data properties
         colPerfumeName.setCellValueFactory(cellData -> cellData.getValue().perfumeNameProperty());
         colPriceGram.setCellValueFactory(cellData -> cellData.getValue().priceGramProperty());
         colRetailRounded.setCellValueFactory(cellData -> cellData.getValue().retailRoundedProperty());
+
+        // 2. Set the data list to the TableView
         resultTable.setItems(resultsList);
 
-        //  Setup Auto-Update
+        // 3. Apply white text color to cells for Dark Mode
+        setWhiteText(colPerfumeName);
+        setWhiteText(colPriceGram);
+        setWhiteText(colRetailRounded);
+
+        // 4. Initialize the automatic exchange rate update
         setupAutoUpdateRate();
+    }
+
+    /**
+     * Helper method to customize table cells with white text color
+     * to ensure readability on dark backgrounds.
+     */
+    private void setWhiteText(TableColumn<OilResult, String> column) {
+        column.setCellFactory(tc -> new TableCell<OilResult, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(item);
+                    setStyle("-fx-text-fill: white; -fx-alignment: CENTER-LEFT; -fx-font-size: 13px;");
+                }
+            }
+        });
     }
 
     // Auto-Update Function
@@ -53,25 +82,25 @@ public class HelloController {
     }
 
     private void updateLiveRate() {
-        double currentRate = 30.50 + (Math.random() * 0.5);
-        lblLiveRate.setText(String.format("Live USD/TL : %.2f", currentRate));
-        System.out.println("Rate updated automatically!");
+        // Start from 44.00 as per management feedback
+        currentExchangeRate = 44.00 + (Math.random() * 0.5);
+        lblLiveRate.setText(String.format("Live USD/TL : %.2f", currentExchangeRate));
     }
 
     @FXML
     protected void onCalculateButtonClick() {
         try {
-            // Read Values and Calculate
             String name = txtName.getText();
             double price = Double.parseDouble(txtPrice.getText());
             double amount = Double.parseDouble(txtAmount.getText());
-            double total = price * amount;
-            double pricePerGram = (price * 30) / 100;
-            double roundedTotal = Math.round(total * 30);
 
-            // Add Result
-            resultsList.add(new OilResult(name, String.format("%.2f TL/g", pricePerGram), String.format("%.2f TL", roundedTotal)));
+            // Dynamic Calculation based on the Live Rate
+            double pricePerGram = (price * currentExchangeRate) / 100;
+            double roundedTotal = Math.round((price * amount) * currentExchangeRate);
 
+            resultsList.add(new OilResult(name,
+                    String.format("%.2f TL/g", pricePerGram),
+                    String.format("%.2f TL", roundedTotal)));
             // Clear Fields
             txtName.clear();
             txtPrice.clear();
