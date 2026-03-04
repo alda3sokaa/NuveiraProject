@@ -30,8 +30,8 @@ const float DEVELOPMENT_COST_SMALL = 6.0f;
 
 const float SAMPLE_COST = 5.0f;
 
-const float OIL_IN_100ML = 30.0f;
-const float OIL_IN_50ML = 15.0f;
+const float OIL_IN_100ML = 33.0f;
+const float OIL_IN_50ML = 16.5f;
 const float OIL_IN_10ML = 3.0f;
 const float OIL_IN_5ML = 1.8f;
 const float OIL_IN_3ML = 1.0f;
