@@ -7,8 +7,15 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.util.Duration;
+import com.nuveira.nuveiraapp.NativeBridge;
 
-public class HelloController {
+public class HelloController  {
+
+    static {
+        System.loadLibrary("native");
+    }
+
+    private final NativeBridge bridge = new NativeBridge();
 
     private double currentExchangeRate = 44.00;
 
