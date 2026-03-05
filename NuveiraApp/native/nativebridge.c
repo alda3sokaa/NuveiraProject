@@ -1,48 +1,84 @@
 #include <jni.h>
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 #include "com_nuveira_nuveiraapp_NativeBridge.h"
 
+// --- Constants from your original code ---
+float USD_TO_TL = 44.10f; // This matches your screenshot rate
+
+const float SUEDE_BAG_COST = 26.5f;
+const float CARTON_BAG_COST = 11.3f;
+const float ETHANOL_50ML_COST = 20.0f;
+const float BOTTLE_COST_50ML = 36.0f;
+const float STICKER_COST = 4.0f;
+const float LABOR_COST = 35.0f;
+const float DEVELOPMENT_COST = 15.0f;
+const float SAMPLE_COST = 5.0f;
+const float THANK_YOU_CARD = 4.0f;
+const float RAMADAN_CARD = 5.0f;
+
+const float OIL_IN_50ML = 16.5f;
+
+const float MARKETING_PERCENTAGE = 1.1f;
+const float FAULT_PERCENTAGE = 1.03f;
+const float PROFIT_PERCENTAGE = 2.2f;
+
+const float SMALL_BATCH_TAX = 20.0f;
+const float MEDIUM_BATCH_TAX = 10.0f;
+const float LARGE_BATCH_TAX = 5.0f;
+
+// Global state to store input from Java
 float globalPricePerKg = 0.0f;
 float globalGrams = 0.0f;
 
-// 1. Capture the data from the text fields
 JNIEXPORT void JNICALL Java_com_nuveira_nuveiraapp_NativeBridge_setOilData
   (JNIEnv *env, jobject obj, jfloat pricePerKg, jfloat grams) {
     globalPricePerKg = pricePerKg;
     globalGrams = grams;
 }
 
-// 2. Calculate Gram Price with 20.0 tax and 44.10 rate
 JNIEXPORT jfloat JNICALL Java_com_nuveira_nuveiraapp_NativeBridge_getPricePerGramTL
   (JNIEnv *env, jobject obj) {
-    float usdToTl = 44.10f; // Matching your screenshot
-    float tax = 0.0f;
+    float pricePerKg = globalPricePerKg;
 
-    if (globalGrams < 100.0f) tax = 20.0f;
-    else if (globalGrams < 250.0f) tax = 15.0f;
-    else if (globalGrams < 500.0f) tax = 10.0f;
+    if (globalGrams < 100.0f) pricePerKg += SMALL_BATCH_TAX;
+    else if (globalGrams < 250.0f) pricePerKg += MEDIUM_BATCH_TAX;
+    else if (globalGrams < 500.0f) pricePerKg += LARGE_BATCH_TAX;
 
-    // (Price + Tax) * Rate / 1000
-    float taxedPriceInTl = (globalPricePerKg + tax) * usdToTl;
-    return taxedPriceInTl / 1000.0f;
+    float pricePerGramUsd = pricePerKg / 1000.0f;
+    return pricePerGramUsd * USD_TO_TL;
 }
 
-// 3. Calculate 50ML Price
 JNIEXPORT jfloat JNICALL Java_com_nuveira_nuveiraapp_NativeBridge_get50MLPrice
   (JNIEnv *env, jobject obj) {
-    float gramPrice = Java_com_nuveira_nuveiraapp_NativeBridge_getPricePerGramTL(env, obj);
-    return gramPrice * 50.0f; 
+    float gramPriceTl = Java_com_nuveira_nuveiraapp_NativeBridge_getPricePerGramTL(env, obj);
+    float oilAmountPriceTl = OIL_IN_50ML * gramPriceTl;
+
+    // The EXACT formula from your Calculate50MLPrice function
+    float retailPriceInTl = (oilAmountPriceTl + CARTON_BAG_COST + SUEDE_BAG_COST +
+                ETHANOL_50ML_COST + BOTTLE_COST_50ML + 
+                STICKER_COST + LABOR_COST + DEVELOPMENT_COST + 
+                SAMPLE_COST + RAMADAN_CARD + 
+                THANK_YOU_CARD) * MARKETING_PERCENTAGE
+                * FAULT_PERCENTAGE * PROFIT_PERCENTAGE;
+    
+    return retailPriceInTl;
 }
 
-// 4. Round UP to nearest 100
 JNIEXPORT jfloat JNICALL Java_com_nuveira_nuveiraapp_NativeBridge_roundToNearest100
-  (JNIEnv *env, jobject obj, jfloat value) {
-    // If value is 510, this returns 600
-    return ceilf(value / 100.0f) * 100.0f;
+  (JNIEnv *env, jobject obj, jfloat price) {
+    // Your original code used roundf (nearest), not ceilf (up)
+    // 510.0 -> 500.0 | 551.0 -> 600.0
+    return roundf(price / 100.0f) * 100.0f;
 }
 
 JNIEXPORT jfloat JNICALL Java_com_nuveira_nuveiraapp_NativeBridge_getLiveRateFromC
   (JNIEnv *env, jobject obj) {
-    return 44.10f;
+    return USD_TO_TL;
+}
+
+JNIEXPORT jfloat JNICALL Java_com_nuveira_nuveiraapp_NativeBridge_getUsdRate
+  (JNIEnv *env, jobject obj) {
+    return USD_TO_TL;
 }
