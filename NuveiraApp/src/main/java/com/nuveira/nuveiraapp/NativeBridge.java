@@ -5,11 +5,15 @@ import java.io.File;
 public class NativeBridge {
     static {
         try {
-            File lib = new File("NativeBridge.dll").getAbsoluteFile();
-            System.load(lib.getAbsolutePath());
-            System.out.println("[SUCCESS] DLL loaded from: " + lib.getAbsolutePath());
-        } catch (UnsatisfiedLinkError e) {
-            System.err.println("[ERROR] Could not find or load NativeBridge.dll at: " + new File("NativeBridge.dll").getAbsolutePath());
+            // This version prints exactly where it's looking before it tries to load
+            String libraryPath = new File("NativeBridge.dll").getAbsolutePath();
+            System.out.println("[DEBUG] Attempting to load DLL from: " + libraryPath);
+
+            System.load(libraryPath);
+            System.out.println("[SUCCESS] DLL loaded successfully!");
+        } catch (Throwable e) {
+            System.err.println("[CRITICAL ERROR] DLL Load Failed!");
+            e.printStackTrace(); // This will show us the REAL reason it failed
         }
     }
 
@@ -21,4 +25,6 @@ public class NativeBridge {
     // ADDED THESE TWO - They were missing!
     public native float getPricePerGramTL();
     public native float roundToNearest100(float value);
+    public native void setExchangeRate(float rate);
+
 }
