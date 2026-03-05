@@ -4,8 +4,8 @@
 #include <string.h>
 #include "com_nuveira_nuveiraapp_NativeBridge.h"
 
-// --- Constants from your original code ---
-float USD_TO_TL = 44.10f; // This matches your screenshot rate
+
+float USD_TO_TL = 44.10f; 
 
 const float SUEDE_BAG_COST = 26.5f;
 const float CARTON_BAG_COST = 11.3f;
@@ -55,7 +55,7 @@ JNIEXPORT jfloat JNICALL Java_com_nuveira_nuveiraapp_NativeBridge_get50MLPrice
     float gramPriceTl = Java_com_nuveira_nuveiraapp_NativeBridge_getPricePerGramTL(env, obj);
     float oilAmountPriceTl = OIL_IN_50ML * gramPriceTl;
 
-    // The EXACT formula from your Calculate50MLPrice function
+
     float retailPriceInTl = (oilAmountPriceTl + CARTON_BAG_COST + SUEDE_BAG_COST +
                 ETHANOL_50ML_COST + BOTTLE_COST_50ML + 
                 STICKER_COST + LABOR_COST + DEVELOPMENT_COST + 
@@ -68,8 +68,7 @@ JNIEXPORT jfloat JNICALL Java_com_nuveira_nuveiraapp_NativeBridge_get50MLPrice
 
 JNIEXPORT jfloat JNICALL Java_com_nuveira_nuveiraapp_NativeBridge_roundToNearest100
   (JNIEnv *env, jobject obj, jfloat price) {
-    // Your original code used roundf (nearest), not ceilf (up)
-    // 510.0 -> 500.0 | 551.0 -> 600.0
+
     return roundf(price / 100.0f) * 100.0f;
 }
 
