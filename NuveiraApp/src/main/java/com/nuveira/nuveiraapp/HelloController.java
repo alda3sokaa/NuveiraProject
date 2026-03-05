@@ -7,51 +7,47 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.util.Duration;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import javafx.application.Platform;
 
 public class HelloController {
 
-    private double currentExchangeRate = 44.00;
+    // 1. REMOVED static { System.loadLibrary("native"); }
+    // It should ONLY be inside NativeBridge.java to avoid duplicate loading errors.
 
-    // Bind Input Fields
+    private final NativeBridge bridge = new NativeBridge();
+
     @FXML private TextField txtName;
     @FXML private TextField txtPrice;
     @FXML private TextField txtAmount;
     @FXML private Label lblLiveRate;
 
-    // Bind Table and Columns
     @FXML private TableView<OilResult> resultTable;
     @FXML private TableColumn<OilResult, String> colPerfumeName;
     @FXML private TableColumn<OilResult, String> colPriceGram;
     @FXML private TableColumn<OilResult, String> colRetailRounded;
 
     private ObservableList<OilResult> resultsList = FXCollections.observableArrayList();
-
-    //  Timeline Variable
     private Timeline timeline;
 
     @FXML
     public void initialize() {
-        // 1. Bind columns to data properties
         colPerfumeName.setCellValueFactory(cellData -> cellData.getValue().perfumeNameProperty());
         colPriceGram.setCellValueFactory(cellData -> cellData.getValue().priceGramProperty());
         colRetailRounded.setCellValueFactory(cellData -> cellData.getValue().retailRoundedProperty());
 
-        // 2. Set the data list to the TableView
         resultTable.setItems(resultsList);
 
-        // 3. Apply white text color to cells for Dark Mode
         setWhiteText(colPerfumeName);
         setWhiteText(colPriceGram);
         setWhiteText(colRetailRounded);
 
-        // 4. Initialize the automatic exchange rate update
         setupAutoUpdateRate();
     }
 
-    /**
-     * Helper method to customize table cells with white text color
-     * to ensure readability on dark backgrounds.
-     */
     private void setWhiteText(TableColumn<OilResult, String> column) {
         column.setCellFactory(tc -> new TableCell<OilResult, String>() {
             @Override
@@ -68,71 +64,91 @@ public class HelloController {
         });
     }
 
-    // Auto-Update Function
     private void setupAutoUpdateRate() {
-        // Create a timeline to update the rate every 60 seconds (Interval is adjustable)
         timeline = new Timeline(new KeyFrame(Duration.seconds(60), event -> {
             updateLiveRate();
         }));
-        timeline.setCycleCount(Timeline.INDEFINITE); // Infinite Loop
-        timeline.play(); // Start Update
-
-        // Update rate upon application startup
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
         updateLiveRate();
     }
 
-    /**
-     * METHOD NOTE:
-     * This is a simulated live rate for demonstration purposes.
-     * Currently, it's not connected to a real bank or stock exchange API.
-     * Purpose: To show how the UI and calculations dynamically update.
-     * Future Task: Integrate a real-time Currency API.
-     */
     private void updateLiveRate() {
-        // Start from 44.00 as per management feedback
-        currentExchangeRate = 44.00 + (Math.random() * 0.5);
-        lblLiveRate.setText(String.format("Live USD/TL : %.2f", currentExchangeRate));
+        System.out.println("DEBUG: Starting API fetch...");
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://open.er-api.com/v6/latest/USD"))
+                    .build();
 
-        // Console log for debugging
-        System.out.println("Rate updated (Simulation): " + currentExchangeRate);
+            client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .thenApply(response -> {
+                        System.out.println("DEBUG: Received response from API.");
+                        return response.body();
+                    })
+                    .thenAccept(body -> {
+                        String search = "\"TRY\":";
+                        int index = body.indexOf(search);
+                        if (index != -1) {
+                            int start = index + search.length();
+                            int end = body.indexOf(",", start);
+                            if (end == -1) end = body.indexOf("}", start);
+
+                            String rateStr = body.substring(start, end).replace(":", "").replace("\"", "").trim();
+                            float rate = Float.parseFloat(rateStr);
+
+                            System.out.println("DEBUG: Parsed Rate = " + rate);
+
+                            // Update C Bridge
+                            bridge.setExchangeRate(rate);
+
+                            // Update UI
+                            Platform.runLater(() -> {
+                                lblLiveRate.setText(String.format("Live USD/TL : %.4f", rate));
+                                System.out.println("DEBUG: UI Label updated successfully.");
+                            });
+                        } else {
+                            System.out.println("DEBUG: Could not find TRY in API response.");
+                        }
+                    })
+                    .exceptionally(ex -> {
+                        System.out.println("DEBUG: API Error: " + ex.getMessage());
+                        Platform.runLater(() -> lblLiveRate.setText("Live USD/TL : 44.10 (Fallback)"));
+                        return null;
+                    });
+        } catch (Exception e) {
+            System.out.println("DEBUG: Connection Exception: " + e.getMessage());
+        }
     }
 
     @FXML
     protected void onCalculateButtonClick() {
         try {
-            // 1. Read input values from TextFields
             String name = txtName.getText();
-            double pricePerKiloUSD = Double.parseDouble(txtPrice.getText()); // Oil price per Kilogram in USD
-            double amountInGrams = Double.parseDouble(txtAmount.getText()); // Required amount in Grams
+            float pricePerKiloUSD = Float.parseFloat(txtPrice.getText());
+            float amountInGrams = Float.parseFloat(txtAmount.getText());
 
-            // 2. Dynamic calculations based on current exchange rate (starting from 44.00)
-            // Calculate the price of a single gram in Turkish Lira (TL)
-            double pricePerGramTL = (pricePerKiloUSD * currentExchangeRate) / 1000;
+            // 3. JNI CALLS
+            bridge.setOilData(pricePerKiloUSD, amountInGrams);
 
-            // Calculate total amount in TL (Price per gram * requested amount)
-            double totalTL = pricePerGramTL * amountInGrams;
-            double roundedTotalTL = Math.round(totalTL); // Round to the nearest whole number for retail
+            float pricePerGramTL = bridge.getPricePerGramTL();
+            float retailPrice50ML = bridge.get50MLPrice();
+            float roundedPrice = bridge.roundToNearest100(retailPrice50ML);
 
-            // في غلط فالحسابات
-            // لازم نرجع نشوف طريقة الحسابات
 
-            // 3. Add the result to the TableView (Single entry)
             resultsList.add(new OilResult(
                     name,
                     String.format("%.2f TL/g", pricePerGramTL),
-                    String.format("%.0f TL", roundedTotalTL)
+                    String.format("%.2f TL", roundedPrice)
             ));
 
-            // 4. Clear input fields for next entry
             txtName.clear();
             txtPrice.clear();
             txtAmount.clear();
 
         } catch (NumberFormatException e) {
-            // Show error alert if user inputs are not valid numbers
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Input Error");
-            alert.setHeaderText(null);
             alert.setContentText("Please enter valid numbers for price and amount.");
             alert.showAndWait();
         }
