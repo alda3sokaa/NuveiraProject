@@ -1,3 +1,4 @@
+module-info.class
 com\nuveira\nuveiraapp\HelloController.class
 com\nuveira\nuveiraapp\Launcher.class
 com\nuveira\nuveiraapp\HelloController$1.class

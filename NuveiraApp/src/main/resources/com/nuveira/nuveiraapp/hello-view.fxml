@@ -30,7 +30,7 @@
             <Label text="Oil Price (USD)" GridPane.columnIndex="1" style="-fx-font-weight: bold; -fx-text-fill: white;" />
             <TextField fx:id="txtPrice" promptText="0.00" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-            <Label text="Oil Amount" GridPane.columnIndex="2" style="-fx-font-weight: bold; -fx-text-fill: white;" />
+            <Label text="Oil Amount (in grams)" GridPane.columnIndex="2" style="-fx-font-weight: bold; -fx-text-fill: white;" />
             <TextField fx:id="txtAmount" promptText="0" GridPane.columnIndex="2" GridPane.rowIndex="1" />
         </children>
     </GridPane>
@@ -52,4 +52,16 @@
     </TableView>
 
     <Label fx:id="lblLiveRate" text="Live USD/TL : ..." style="-fx-font-size: 12px; -fx-text-fill: #00ff00; -fx-font-weight: bold;"/>
+
+    <HBox spacing="20" alignment="CENTER" style="-fx-background-color: #2b2b2b; -fx-padding: 10; -fx-background-radius: 5;">
+        <VBox spacing="5">
+            <Label text="Total Selling Price (TL)" style="-fx-text-fill: white; -fx-font-weight: bold;" />
+            <TextField fx:id="txtTotalSellingPrice" editable="false" prefWidth="150" style="-fx-background-color: #404040; -fx-text-fill: #00ff00; -fx-font-weight: bold;" />
+        </VBox>
+
+        <VBox spacing="5">
+            <Label text="Total Oil Cost (TL)" style="-fx-text-fill: white; -fx-font-weight: bold;" />
+            <TextField fx:id="txtOilCost" editable="false" prefWidth="150" style="-fx-background-color: #404040; -fx-text-fill: #ffcc00; -fx-font-weight: bold;" />
+        </VBox>
+    </HBox>
 </VBox>

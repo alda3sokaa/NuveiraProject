@@ -30,6 +30,12 @@ public class HelloController {
     @FXML private TableColumn<OilResult, String> colPriceGram;
     @FXML private TableColumn<OilResult, String> colRetailRounded;
 
+    @FXML
+    private TextField txtTotalSellingPrice;
+
+    @FXML
+    private TextField txtOilCost;
+
     private ObservableList<OilResult> resultsList = FXCollections.observableArrayList();
     private Timeline timeline;
 
@@ -120,7 +126,6 @@ public class HelloController {
             System.out.println("DEBUG: Connection Exception: " + e.getMessage());
         }
     }
-
     @FXML
     protected void onCalculateButtonClick() {
         try {
@@ -128,29 +133,48 @@ public class HelloController {
             float pricePerKiloUSD = Float.parseFloat(txtPrice.getText());
             float amountInGrams = Float.parseFloat(txtAmount.getText());
 
-            // 3. JNI CALLS
             bridge.setOilData(pricePerKiloUSD, amountInGrams);
 
             float pricePerGramTL = bridge.getPricePerGramTL();
-            float retailPrice50ML = bridge.get50MLPrice();
-            float roundedPrice = bridge.roundToNearest100(retailPrice50ML);
+            float roundedPrice = bridge.roundToNearest100(bridge.get50MLPrice());
 
+            // حساب التكلفة بناءً على معادلة حسن: سعر الغرام × عدد الغرامات
+            double currentOilCost = pricePerGramTL * amountInGrams;
 
+            // إضافة الصف مع إرسال التكلفة المحسوبة
             resultsList.add(new OilResult(
                     name,
                     String.format("%.2f TL/g", pricePerGramTL),
-                    String.format("%.2f TL", roundedPrice)
+                    String.format("%.2f TL", roundedPrice),
+                    currentOilCost // حفظ التكلفة هنا
             ));
 
-            txtName.clear();
-            txtPrice.clear();
-            txtAmount.clear();
+            updateTotals();
+            clearFields();
 
         } catch (NumberFormatException e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Input Error");
-            alert.setContentText("Please enter valid numbers for price and amount.");
-            alert.showAndWait();
+            // تنبيه الخطأ
         }
     }
+
+    private void updateTotals() {
+        double totalSelling = 0;
+        double totalCost = 0;
+
+        for (OilResult item : resultsList) {
+            totalSelling += item.getTotalPriceValue();
+            totalCost += item.getActualCost(); // جمع التكلفة الحقيقية المخزنة
+        }
+
+        txtTotalSellingPrice.setText(String.format("%.2f TL", totalSelling));
+        txtOilCost.setText(String.format("%.2f TL", totalCost));
+    }
+
+    private void clearFields() {
+        txtName.clear();
+        txtPrice.clear();
+        txtAmount.clear();
+        txtName.requestFocus();
+    }
+
 }
